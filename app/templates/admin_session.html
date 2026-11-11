@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block title %}Admin — Session #{{ session.id }}{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center;">
+    <h1>Session #{{ session.id }} — Admin Controls</h1>
+    <span class="badge badge-{{ session.status.value }}">{{ session.status.value }}</span>
+</div>
+
+<div style="margin-top: 24px; display: flex; gap: 12px; flex-wrap: wrap;">
+    {% if session.status.value == "scheduled" %}
+        <form method="POST" action="/admin/sessions/{{ session.id }}/start">
+            <button type="submit" class="btn btn-primary">Start Session</button>
+        </form>
+    {% endif %}
+    {% if session.status.value == "live" %}
+        <form method="POST" action="/admin/sessions/{{ session.id }}/pause">
+            <button type="submit" class="btn">Pause</button>
+        </form>
+    {% endif %}
+    {% if session.status.value == "paused" %}
+        <form method="POST" action="/admin/sessions/{{ session.id }}/resume">
+            <button type="submit" class="btn btn-primary">Resume</button>
+        </form>
+    {% endif %}
+    {% if session.status.value in ("live", "paused") %}
+        <form method="POST" action="/admin/sessions/{{ session.id }}/fault">
+            <input type="hidden" name="reason" value="admin_fault">
+            <button type="submit" class="btn btn-danger">Mark as Faulted</button>
+        </form>
+    {% endif %}
+</div>
+
+{% if session.status.value in ("live", "paused") %}
+<div style="margin-top: 32px;">
+    <h2>Post Result</h2>
+    <form method="POST" action="/admin/sessions/{{ session.id }}/complete" style="max-width: 500px;">
+        <div class="form-group">
+            <label>Result Code</label>
+            <select name="result_code">
+                <option value="player_1_wins">Player 1 Wins</option>
+                <option value="player_2_wins">Player 2 Wins</option>
+                <option value="draw">Draw</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Winning Player ID</label>
+            <input type="number" name="winning_user_id" placeholder="User ID of winner">
+        </div>
+        <div class="form-group">
+            <label>End Reason</label>
+            <select name="end_reason">
+                <option value="aruco_finish">Aruco Finish</option>
+                <option value="admin_result">Admin Result</option>
+                <option value="timeout">Timeout</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Result Payload (JSON, optional)</label>
+            <textarea name="result_payload_json" rows="4" placeholder='{"lap_times": [45.2, 43.8]}'></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Complete Session</button>
+    </form>
+</div>
+{% endif %}
+
+<div class="session-grid" style="margin-top: 32px;">
+    <div>
+        <h2>Players</h2>
+        {% if session.players %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Seat</th>
+                    <th>Player ID</th>
+                    <th>Side</th>
+                    <th>Confirmed</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for player in session.players %}
+                <tr>
+                    <td>{{ player.seat_index }}</td>
+                    <td>{{ player.user_id }}</td>
+                    <td>{{ player.team_or_side or "—" }}</td>
+                    <td>{{ "Yes" if player.joined_confirmed else "No" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+            <p style="color: #888;">No players assigned.</p>
+        {% endif %}
+
+        {% if session.status.value == "completed" %}
+        <div style="margin-top: 24px; border: 2px solid #111; padding: 20px;">
+            <h2>Result</h2>
+            <p><strong>Result:</strong> {{ session.result_code }}</p>
+            <p><strong>Winner:</strong> Player {{ session.winning_user_id or "—" }}</p>
+            <p><strong>End Reason:</strong> {{ session.end_reason }}</p>
+            <p><strong>Duration:</strong> {{ session.duration_seconds }}s</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <div>
+        <h2>Event Log</h2>
+        <div class="event-log">
+            {% if session.events %}
+                {% for event in session.events | reverse %}
+                <div class="event-item">
+                    <span class="event-time">{{ event.event_time.strftime('%H:%M:%S') }}</span>
+                    <strong>{{ event.event_type }}</strong>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p style="color: #888; font-size: 12px;">No events yet.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div style="margin-top: 32px;">
+    <a href="/admin/sessions/{{ session.id }}/stream" class="btn btn-primary">Live Stream</a>
+    <a href="/sessions/{{ session.id }}" class="btn" style="margin-left: 12px;">View Player View</a>
+    <a href="/admin/slots" class="btn" style="margin-left: 12px;">Back to Slots</a>
+</div>
+{% endblock %}

@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block title %}Stream — Session #{{ session_id }}{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center;">
+    <h1>Live Stream — Session #{{ session_id }}</h1>
+    <a href="/admin/sessions/{{ session_id }}" class="btn">Back to Session</a>
+</div>
+
+<div style="margin-top: 24px; display: flex; gap: 12px; align-items: center;">
+    <span class="badge" id="clientBadge">Client: Disconnected</span>
+    <span class="badge" id="gameBadge">Stream: Inactive</span>
+    <span class="badge" id="modeBadge">Mode: Raw</span>
+</div>
+
+<div style="margin-top: 24px; background: #000; width: 640px; height: 480px; display: flex; align-items: center; justify-content: center; border: 2px solid #111;">
+    <img id="feed" src="/stream/feed" style="width: 100%; height: 100%; object-fit: cover; display: none;" />
+    <p id="placeholder" style="color: #555; font-size: 14px;">Waiting for stream client to connect...</p>
+</div>
+
+<div style="margin-top: 20px; display: flex; gap: 12px;">
+    <form method="POST" action="/admin/stream/start">
+        <button type="submit" id="startBtn" class="btn btn-primary">Start Stream</button>
+    </form>
+    <form method="POST" action="/admin/stream/stop">
+        <button type="submit" id="stopBtn" class="btn btn-danger">Stop Stream</button>
+    </form>
+    <form method="POST" action="/admin/stream/mode" style="display: inline;">
+        <input type="hidden" name="mode" id="modeInput" value="processed">
+        <button type="submit" id="modeBtn" class="btn">Switch to Processed</button>
+    </form>
+</div>
+
+<div style="margin-top: 32px;">
+    <h2>How to connect a camera client</h2>
+    <p>Run this on the robot/camera machine:</p>
+    <pre style="background: #f5f5f5; padding: 16px; font-size: 13px; border: 1px solid #ddd;">python stream.py --server http://YOUR_SERVER_IP:8000</pre>
+    <p style="font-size: 12px; color: #888; margin-top: 8px;">Once connected, the Client badge above will turn green and you can start the stream.</p>
+</div>
+
+<script>
+    let currentMode = "raw";
+
+    const feed = document.getElementById('feed');
+    const placeholder = document.getElementById('placeholder');
+    const startBtn = document.getElementById('startBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const clientBadge = document.getElementById('clientBadge');
+    const gameBadge = document.getElementById('gameBadge');
+    const modeBadge = document.getElementById('modeBadge');
+    const modeBtn = document.getElementById('modeBtn');
+
+    const sse = new EventSource('/stream/status');
+
+    sse.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+
+        if (data.client_connected) {
+            clientBadge.textContent = 'Client: Connected';
+            clientBadge.style.borderColor = '#00aa00';
+            clientBadge.style.color = '#00aa00';
+            startBtn.disabled = false;
+        } else {
+            clientBadge.textContent = 'Client: Disconnected';
+            clientBadge.style.borderColor = '#cc0000';
+            clientBadge.style.color = '#cc0000';
+            startBtn.disabled = true;
+        }
+
+        if (data.game_active && data.client_connected) {
+            gameBadge.textContent = 'Stream: Active';
+            gameBadge.style.borderColor = '#00aa00';
+            gameBadge.style.color = '#00aa00';
+            feed.style.display = 'block';
+            placeholder.style.display = 'none';
+            stopBtn.disabled = false;
+            startBtn.disabled = true;
+        } else {
+            gameBadge.textContent = 'Stream: Inactive';
+            gameBadge.style.borderColor = '#888';
+            gameBadge.style.color = '#888';
+            feed.style.display = 'none';
+            placeholder.style.display = 'block';
+            stopBtn.disabled = true;
+        }
+
+        if (data.stream_mode) {
+            currentMode = data.stream_mode;
+            modeBadge.textContent = `Mode: ${currentMode === 'raw' ? 'Raw' : 'Processed'}`;
+            document.getElementById('modeInput').value = currentMode === 'raw' ? 'processed' : 'raw';
+            modeBtn.textContent = currentMode === 'raw' ? 'Switch to Processed' : 'Switch to Raw';
+        }
+    };
+
+    async function startStream() {
+        const res = await fetch('/admin/stream/start', {
+            method: 'POST',
+            headers: { 'Authorization': 'Bearer ' + getCookie('access_token') }
+        });
+        if (!res.ok) {
+            const data = await res.json();
+            alert(data.detail);
+        }
+    }
+
+    async function stopStream() {
+        await fetch('/admin/stream/stop', {
+            method: 'POST',
+            headers: { 'Authorization': 'Bearer ' + getCookie('access_token') }
+        });
+    }
+
+    async function toggleMode() {
+        const newMode = currentMode === 'raw' ? 'processed' : 'raw';
+        await fetch('/admin/stream/mode', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + getCookie('access_token')
+            },
+            body: JSON.stringify({ mode: newMode })
+        });
+    }
+
+    function getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+        return '';
+    }
+</script>
+{% endblock %}

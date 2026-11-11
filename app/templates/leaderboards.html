@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Leaderboards — WRC{% endblock %}
+
+{% block content %}
+<h1>Leaderboards</h1>
+<p>Global rankings across all arenas.</p>
+
+<div style="margin-top: 32px;">
+    <h2>Robot Racing</h2>
+    {% if racing and racing.entries %}
+    <table>
+        <thead>
+            <tr>
+                <th>Rank</th>
+                <th>Player ID</th>
+                <th>Wins</th>
+                <th>Losses</th>
+                <th>Points</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for entry in racing.entries %}
+            <tr>
+                <td>{{ entry.rank or loop.index }}</td>
+                <td>{{ entry.user_id }}</td>
+                <td>{{ entry.wins }}</td>
+                <td>{{ entry.losses }}</td>
+                <td>{{ entry.points }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+        <p style="color: #888;">No rankings yet. Play some games first.</p>
+    {% endif %}
+</div>
+
+<div style="margin-top: 48px;">
+    <h2>Robot Football</h2>
+    {% if football and football.entries %}
+    <table>
+        <thead>
+            <tr>
+                <th>Rank</th>
+                <th>Player ID</th>
+                <th>Wins</th>
+                <th>Losses</th>
+                <th>Points</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for entry in football.entries %}
+            <tr>
+                <td>{{ entry.rank or loop.index }}</td>
+                <td>{{ entry.user_id }}</td>
+                <td>{{ entry.wins }}</td>
+                <td>{{ entry.losses }}</td>
+                <td>{{ entry.points }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+        <p style="color: #888;">No rankings yet. Play some games first.</p>
+    {% endif %}
+</div>
+{% endblock %}

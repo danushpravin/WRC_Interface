@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Slot #{{ slot.id }} — WRC{% endblock %}
+{% block content %}
+<h1>Slot #{{ slot.id }}</h1>
+<p>{{ slot.starts_at.strftime('%d %b %Y %H:%M') }} — {{ slot.ends_at.strftime('%H:%M') }}</p>
+<div style="margin-top: 24px; display: flex; gap: 12px; align-items: center;">
+<span class="badge badge-{{ slot.status.value }}">{{ slot.status.value }}</span>
+<span>{{ slot.booked_count }}/{{ slot.capacity }} players registered</span>
+</div>
+<div style="margin-top: 32px;">
+<h2>Details</h2>
+<table>
+<tr><th>Arena</th><td>{{ arena.name if arena else "Arena " + slot.arena_id|string }}</td></tr>
+<tr><th>Game Variant</th><td>{{ variant.title if variant else "Variant " + slot.game_variant_id|string }}</td></tr>
+<tr><th>Price</th><td>{{ slot.price_tokens }} tokens / £{{ slot.price_gbp }}</td></tr>
+<tr><th>Wagering</th><td>{{ "Enabled" if slot.wagering_allowed else "Disabled" }}</td></tr>
+</table>
+</div>
+<div style="margin-top: 32px;">
+<h2>Registered Players</h2>
+    {% if registrations %}
+<table>
+<thead>
+<tr>
+<th>Gamer Name</th>
+<th>Email</th>
+<th>Side</th>
+<th>Status</th>
+<th>Joined</th>
+</tr>
+</thead>
+<tbody>
+            {% for reg in registrations %}
+            {% if reg.registration_status != "cancelled" %}
+<tr>
+<td>{{ reg.gamer_name }}</td>
+<td>{{ reg.email }}</td>
+<td>{{ reg.team_or_side or "—" }}</td>
+<td><span class="badge">{{ reg.registration_status }}</span></td>
+<td>{{ reg.joined_at.strftime('%d %b %H:%M') }}</td>
+</tr>
+            {% endif %}
+            {% endfor %}
+</tbody>
+</table>
+    {% else %}
+<p>No players registered yet.</p>
+    {% endif %}
+</div>
+{% if session_user %}
+<div style="margin-top: 32px; border-top: 1px solid #111; padding-top: 24px;">
+    {% set my_registration = registrations | selectattr("user_id", "equalto", session_user.id) | selectattr("registration_status", "ne", "cancelled") | first %}
+    {% if my_registration %}
+<p>You are registered for this slot.</p>
+<form method="POST" action="/slots/{{ slot.id }}/cancel" style="margin-top: 12px;">
+<button type="submit" class="btn btn-danger">Cancel My Registration</button>
+</form>
+    {% elif slot.status.value in ("published", "partially_booked") %}
+<form method="POST" action="/slots/{{ slot.id }}/register">
+<button type="submit" class="btn btn-primary">Register for this Slot</button>
+</form>
+    {% elif slot.status.value == "confirmed" %}
+<p>This slot is full.</p>
+    {% else %}
+<p>Registration is closed.</p>
+    {% endif %}
+</div>
+{% else %}
+<div style="margin-top: 32px;">
+<p><a href="/login">Login</a> to register for this slot.</p>
+</div>
+{% endif %}
+
+{% if session_user and session_user.role.value in ("admin", "super_admin") %}
+<div style="margin-top: 32px; border-top: 1px solid #111; padding-top: 24px;">
+    <h2>Admin Actions</h2>
+    {% if slot.status.value == "confirmed" %}
+        <form method="POST" action="/admin/slots/{{ slot.id }}/create-session">
+            <button type="submit" class="btn btn-primary">Start Session</button>
+        </form>
+    {% elif slot.status.value in ("published", "partially_booked") %}
+        <p style="color: #888; font-size: 13px;">Waiting for slot to fill up ({{ slot.booked_count }}/{{ slot.capacity }} players registered).</p>
+    {% elif slot.status.value == "in_progress" %}
+        <p style="color: #00aa00; font-size: 13px;">Session is live.</p>
+    {% else %}
+        <p style="color: #888; font-size: 13px;">Session cannot be started for this slot.</p>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}

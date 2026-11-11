@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Arenas — WRC{% endblock %}
+
+{% block content %}
+<h1>Arenas</h1>
+<p>Robot gaming arenas around the world.</p>
+
+<div style="margin-top: 32px;">
+    {% for arena in arenas %}
+    <div class="card">
+        <h3>{{ arena.name }}</h3>
+        <p>{{ arena.city }}, {{ arena.country_code }} — {{ arena.timezone }}</p>
+        <p>{{ arena.description }}</p>
+
+        {% if arena.capabilities %}
+        <div style="margin-top: 12px;">
+            <strong style="font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">Capabilities</strong>
+            <div style="margin-top: 8px; display: flex; flex-wrap: wrap; gap: 8px;">
+                {% if arena.capabilities.wagering_enabled %}
+                    <span class="badge badge-confirmed">Wagering</span>
+                {% endif %}
+                {% if arena.capabilities.spectator_betting_enabled %}
+                    <span class="badge badge-confirmed">Spectator Betting</span>
+                {% endif %}
+                {% if arena.capabilities.token_purchases_enabled %}
+                    <span class="badge">Token Purchases</span>
+                {% endif %}
+                {% if arena.capabilities.payouts_enabled %}
+                    <span class="badge badge-confirmed">Payouts</span>
+                {% endif %}
+                {% if arena.capabilities.multi_camera_enabled %}
+                    <span class="badge">Multi Camera</span>
+                {% endif %}
+                {% if arena.capabilities.third_person_tracking_enabled %}
+                    <span class="badge">3rd Person Tracking</span>
+                {% endif %}
+                {% if not arena.capabilities.wagering_enabled and arena.capabilities.message_if_disabled %}
+                    <p style="margin-top: 8px; font-size: 12px; color: #888;">{{ arena.capabilities.message_if_disabled }}</p>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

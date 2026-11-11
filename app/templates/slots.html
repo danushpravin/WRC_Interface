@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Slots — WRC{% endblock %}
+
+{% block content %}
+<h1>Available Slots</h1>
+<p>Book a slot to compete in a live robot game.</p>
+
+<div style="margin-top: 32px;">
+    {% if slots %}
+        {% for slot in slots %}
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div>
+                    <h3>Slot #{{ slot.id }} — Variant {{ slot.game_variant_id }}</h3>
+                    <p>Arena {{ slot.arena_id }} &nbsp;|&nbsp; {{ slot.starts_at.strftime('%d %b %Y %H:%M') }} — {{ slot.ends_at.strftime('%H:%M') }}</p>
+                    <p>
+                        <strong>Capacity:</strong> {{ slot.booked_count }}/{{ slot.capacity }} &nbsp;|&nbsp;
+                        <strong>Price:</strong> {{ slot.price_tokens }} tokens &nbsp;|&nbsp;
+                        <strong>Wagering:</strong> {{ "Yes" if slot.wagering_allowed else "No" }}
+                    </p>
+                </div>
+                <div style="text-align: right;">
+                    <span class="badge badge-{{ slot.status }}">{{ slot.status }}</span>
+                    <div style="margin-top: 12px;">
+                        <a href="/slots/{{ slot.id }}" class="btn">View</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <p>No slots available right now.</p>
+    {% endif %}
+
+    {% if session_user and session_user.role.value in ("admin", "super_admin") %}
+    <div style="margin-top: 24px;">
+        <a href="/admin/slots" class="btn btn-primary">Manage Slots</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

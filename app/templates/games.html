@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}Games — WRC{% endblock %}
+
+{% block content %}
+<h1>Games</h1>
+<p>Available robot games on the platform.</p>
+
+<div style="margin-top: 32px;">
+    {% for game in games %}
+    <div class="card">
+        <h3>{{ game.title }}</h3>
+        <p>{{ game.description }}</p>
+        <p>
+            <strong>Team size:</strong> {{ game.team_size_min }}—{{ game.team_size_max }} players &nbsp;|&nbsp;
+            <strong>Duration:</strong> {{ game.default_duration_seconds // 60 }} min &nbsp;|&nbsp;
+            <strong>Tournaments:</strong> {{ "Yes" if game.supports_tournaments else "No" }} &nbsp;|&nbsp;
+            <strong>Wagering:</strong> {{ "Yes" if game.supports_wagering else "No" }}
+        </p>
+        <div style="margin-top: 12px;">
+            <strong style="font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">Variants</strong>
+            <div style="margin-top: 8px; display: flex; gap: 8px;">
+                {% for variant in game.variants %}
+                <span class="badge">{{ variant.title }} — {{ variant.capacity }} players</span>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

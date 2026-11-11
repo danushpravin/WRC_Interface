@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}WRC Platform{% endblock %}</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<nav>
+    <a href="/" class="logo">WRC</a>
+    <div class="nav-links">
+        <a href="/games">Games</a>
+        <a href="/arenas">Arenas</a>
+        <a href="/slots">Slots</a>
+        <a href="/leaderboards">Leaderboards</a>
+        <a href="/tournaments">Tournaments</a>
+        {% if session_user %}
+            <a href="/account/wallet">Wallet</a>
+            {% if session_user.role.value in ("admin", "super_admin") %}
+                <a href="/admin/slots">Admin</a>
+            {% endif %}
+            <a href="/logout">Logout ({{ session_user.gamer_name }})</a>
+        {% else %}
+            <a href="/login">Login</a>
+            <a href="/register">Register</a>
+        {% endif %}
+    </div>
+</nav>
+
+<div class="container">
+    {% if error %}
+        <div class="alert alert-error">{{ error }}</div>
+    {% endif %}
+    {% if success %}
+        <div class="alert alert-success">{{ success }}</div>
+    {% endif %}
+
+    {% block content %}{% endblock %}
+</div>
+
+</body>
+</html>

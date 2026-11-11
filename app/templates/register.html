@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}Register — WRC{% endblock %}
+
+{% block content %}
+<h1>Register</h1>
+<p>Create your player account.</p>
+
+<div style="max-width: 400px; margin-top: 32px;">
+    <form method="POST" action="/register">
+        <div class="form-group">
+            <label>Email</label>
+            <input type="email" name="email" required>
+        </div>
+        <div class="form-group">
+            <label>Password</label>
+            <input type="password" name="password" required>
+        </div>
+        <div class="form-group">
+            <label>Gamer Name</label>
+            <input type="text" name="gamer_name" required>
+        </div>
+        <div class="form-group">
+            <label>Country Code (optional)</label>
+            <input type="text" name="country_code" maxlength="3" placeholder="GBR">
+        </div>
+        <button type="submit" class="btn btn-primary">Create Account</button>
+        <a href="/login" class="btn" style="margin-left: 12px;">Login</a>
+    </form>
+</div>
+{% endblock %}

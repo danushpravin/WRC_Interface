@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}Session #{{ session.id }} — WRC{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center;">
+    <h1>Session #{{ session.id }}</h1>
+    <span class="badge badge-{{ session.status.value }}">{{ session.status.value }}</span>
+</div>
+
+{% if session.started_at %}
+<p>Started: {{ session.started_at.strftime('%d %b %Y %H:%M') }}</p>
+{% endif %}
+{% if session.ended_at %}
+<p>Ended: {{ session.ended_at.strftime('%d %b %Y %H:%M') }} — Duration: {{ session.duration_seconds }}s</p>
+{% endif %}
+
+<div class="session-grid">
+    <div>
+        <!-- STREAMS -->
+        <h2>Streams</h2>
+        {% if session.streams %}
+            {% for stream in session.streams %}
+            <div class="card">
+                <h3>{{ stream.label or stream.stream_type }}</h3>
+                <p>Type: {{ stream.stream_type }} &nbsp;|&nbsp; Robot: {{ stream.robot_id or "—" }}</p>
+                <p>Status: <span class="badge">{{ stream.status }}</span></p>
+                {% if stream.stream_url %}
+                    <a href="{{ stream.stream_url }}" class="btn" style="margin-top: 8px;">Open Stream</a>
+                {% else %}
+                    <p style="margin-top: 8px; color: #888; font-size: 12px;">Stream URL not yet assigned</p>
+                {% endif %}
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="card">
+                <p style="color: #888;">No streams configured for this session yet.</p>
+            </div>
+        {% endif %}
+
+        <!-- PLAYERS -->
+        <h2 style="margin-top: 24px;">Players</h2>
+        {% if session.players %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Seat</th>
+                    <th>Player ID</th>
+                    <th>Side</th>
+                    <th>Insider Fill</th>
+                    <th>Confirmed</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for player in session.players %}
+                <tr>
+                    <td>{{ player.seat_index }}</td>
+                    <td>{{ player.user_id }}</td>
+                    <td>{{ player.team_or_side or "—" }}</td>
+                    <td>{{ "Yes" if player.is_insider_fill else "No" }}</td>
+                    <td>{{ "Yes" if player.joined_confirmed else "No" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+            <p style="color: #888;">No players assigned yet.</p>
+        {% endif %}
+
+        <!-- RESULT -->
+        {% if session.status.value == "completed" %}
+        <div style="margin-top: 24px; border: 2px solid #111; padding: 20px;">
+            <h2>Result</h2>
+            <p><strong>Result:</strong> {{ session.result_code }}</p>
+            <p><strong>Winner:</strong> Player {{ session.winning_user_id or "—" }}</p>
+            <p><strong>End Reason:</strong> {{ session.end_reason }}</p>
+            {% if session.result_payload_json %}
+            <p><strong>Payload:</strong></p>
+            <pre style="font-size: 12px; margin-top: 8px;">{{ session.result_payload_json }}</pre>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- EVENT LOG -->
+    <div>
+        <h2>Event Log</h2>
+        <div class="event-log">
+            {% if session.events %}
+                {% for event in session.events | reverse %}
+                <div class="event-item">
+                    <span class="event-time">{{ event.event_time.strftime('%H:%M:%S') }}</span>
+                    <strong>{{ event.event_type }}</strong>
+                    {% if event.actor_user_id %}
+                        <span style="color: #888;"> by user {{ event.actor_user_id }}</span>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            {% else %}
+                <p style="color: #888; font-size: 12px;">No events yet.</p>
+            {% endif %}
+        </div>
+
+        {% if session_user and session_user.role.value in ("admin", "super_admin") %}
+        <div style="margin-top: 16px;">
+            <a href="/admin/sessions/{{ session.id }}" class="btn btn-primary">Admin Controls</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

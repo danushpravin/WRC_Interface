@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}Wallet — WRC{% endblock %}
+
+{% block content %}
+<h1>My Wallet</h1>
+<p>Token balance and payment history.</p>
+
+<div style="margin-top: 32px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+    <div class="card">
+        <h3>Game Tokens</h3>
+        <p style="font-size: 28px; color: #111; margin-top: 8px;">120.00</p>
+        <p>tokens available</p>
+    </div>
+    <div class="card">
+        <h3>Locked Balance</h3>
+        <p style="font-size: 28px; color: #111; margin-top: 8px;">0.00</p>
+        <p>tokens locked in active slots</p>
+    </div>
+</div>
+
+<div style="margin-top: 32px;">
+    <h2>Top Up</h2>
+    <div style="display: flex; gap: 12px;">
+        <button class="btn" disabled>+ £10 (100 tokens)</button>
+        <button class="btn" disabled>+ £25 (250 tokens)</button>
+        <button class="btn" disabled>+ £50 (500 tokens)</button>
+    </div>
+    <p style="margin-top: 8px; font-size: 12px; color: #888;">Checkout is not yet connected to a payment provider.</p>
+</div>
+
+<div style="margin-top: 32px;">
+    <h2>Payment History</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Provider</th>
+                <th>Amount</th>
+                <th>Tokens Credited</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>14 Jun 2026</td>
+                <td>Stripe</td>
+                <td>£25.00</td>
+                <td>250.00</td>
+                <td><span class="badge badge-completed">Paid</span></td>
+            </tr>
+            <tr>
+                <td>10 Jun 2026</td>
+                <td>Stripe</td>
+                <td>£10.00</td>
+                <td>100.00</td>
+                <td><span class="badge badge-completed">Paid</span></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div style="margin-top: 32px;">
+    <h2>Payout Verification</h2>
+    <p>Status: <span class="badge badge-scheduled">Unverified</span></p>
+    <p style="font-size: 12px; color: #888; margin-top: 4px;">Verify your identity to enable prize payouts in supported arenas.</p>
+</div>
+
+<div style="margin-top: 32px; padding: 16px; border: 1px solid #ddd; font-size: 12px; color: #888;">
+    This page shows placeholder data. Real wallet balances and Stripe checkout are not yet wired up.
+</div>
+{% endblock %}

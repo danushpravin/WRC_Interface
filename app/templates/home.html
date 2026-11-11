@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block title %}WRC — Robot Gaming Platform{% endblock %}
+
+{% block content %}
+<h1>World Robot Championship</h1>
+<p>Remote robot gaming. Real arenas. Real competition.</p>
+
+<div style="margin-top: 40px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px;">
+    <div class="card">
+        <h3>Games</h3>
+        <p>Browse available robot games and variants.</p>
+        <a href="/games" class="btn" style="margin-top: 12px;">View Games</a>
+    </div>
+    <div class="card">
+        <h3>Arenas</h3>
+        <p>Explore arenas around the world.</p>
+        <a href="/arenas" class="btn" style="margin-top: 12px;">View Arenas</a>
+    </div>
+    <div class="card">
+        <h3>Slots</h3>
+        <p>Book a slot and compete live.</p>
+        <a href="/slots" class="btn" style="margin-top: 12px;">View Slots</a>
+    </div>
+</div>
+
+{% if not session_user %}
+<div style="margin-top: 40px; border-top: 1px solid #111; padding-top: 32px;">
+    <p>Already have an account?</p>
+    <a href="/login" class="btn btn-primary" style="margin-right: 12px;">Login</a>
+    <a href="/register" class="btn">Register</a>
+</div>
+{% endif %}
+{% endblock %}
